@@ -1,6 +1,6 @@
-# SunBear: Peer-to-Peer Messaging and File Transfer
+# CINNAMONBEAR: Peer-to-Peer Messaging and File Transfer
 
-SunBear is a simple peer-to-peer messaging and file transfer application built in C++ for Windows. It allows users to communicate and exchange files over a local network without the need for a centralized server.
+CINNAMONBEAR is a simple peer-to-peer messaging and file transfer application built in C++ for Windows. It allows users to communicate and exchange files over a local network without the need for a centralized server.
 
 ## Features
 
@@ -9,15 +9,11 @@ SunBear is a simple peer-to-peer messaging and file transfer application built i
 - Console-based user interface.
 - No external dependencies required.
 
-## Installation
-
-Simply download the latest release from the [Releases](https://github.com/your_username/sunbear/releases) page.
-
 ## Usage
 
 1. Extract the downloaded ZIP file to a location of your choice.
 2. Open a command prompt and navigate to the extracted directory.
-3. Run the executable `sunbear.exe`.
+3. Run the executable `Ursus maritimus.exe`.
 4. Follow the on-screen instructions to send or receive messages and files.
 
 ## License
