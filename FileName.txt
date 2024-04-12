@@ -1,0 +1,173 @@
+﻿#include <iostream>
+#include <string>
+#include <WS2tcpip.h>
+
+#pragma comment(lib, "ws2_32.lib")
+
+#define PORT 12345
+#define BUFFER_SIZE 1024
+
+void sendMessage(const char* ip, const char* message) {
+    WSADATA wsData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsData) != 0) {
+        std::cerr << "Error: Failed to initialize Winsock\n";
+        return;
+    }
+
+    SOCKET sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sockfd == INVALID_SOCKET) {
+        std::cerr << "Error: Could not create socket\n";
+        WSACleanup();
+        return;
+    }
+
+    sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(PORT);
+    inet_pton(AF_INET, ip, &serverAddr.sin_addr);
+
+    if (connect(sockfd, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) == SOCKET_ERROR) {
+        std::cerr << "Error: Could not connect to peer\n";
+        closesocket(sockfd);
+        WSACleanup();
+        return;
+    }
+
+    send(sockfd, message, strlen(message), 0);
+    std::cout << "Message sent successfully\n";
+
+    closesocket(sockfd);
+    WSACleanup();
+}
+
+void receiveMessage() {
+    WSADATA wsData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsData) != 0) {
+        std::cerr << "Error: Failed to initialize Winsock\n";
+        return;
+    }
+
+    SOCKET listenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (listenSocket == INVALID_SOCKET) {
+        std::cerr << "Error: Could not create socket\n";
+        WSACleanup();
+        return;
+    }
+
+    sockaddr_in serverAddr;
+    serverAddr.sin_family = AF_INET;
+    serverAddr.sin_port = htons(PORT);
+    serverAddr.sin_addr.s_addr = INADDR_ANY;
+
+    if (bind(listenSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) == SOCKET_ERROR) {
+        std::cerr << "Error: Could not bind socket\n";
+        closesocket(listenSocket);
+        WSACleanup();
+        return;
+    }
+
+    if (listen(listenSocket, SOMAXCONN) == SOCKET_ERROR) {
+        std::cerr << "Error: Could not listen on socket\n";
+        closesocket(listenSocket);
+        WSACleanup();
+        return;
+    }
+
+    std::cout << "Listening for incoming connections...\n";
+
+    while (true) {
+        SOCKET clientSocket = accept(listenSocket, nullptr, nullptr);
+        if (clientSocket == INVALID_SOCKET) {
+            std::cerr << "Error: Could not accept incoming connection\n";
+            closesocket(listenSocket);
+            WSACleanup();
+            return;
+        }
+
+        char buffer[BUFFER_SIZE];
+        int bytesReceived = recv(clientSocket, buffer, BUFFER_SIZE, 0);
+        if (bytesReceived > 0) {
+            buffer[bytesReceived] = '\0';
+            std::cout << "Received message: " << buffer << std::endl;
+        }
+
+        closesocket(clientSocket);
+    }
+
+    closesocket(listenSocket);
+    WSACleanup();
+}
+
+void sendMenu() {
+    std::string recipientIp;
+    std::string message;
+
+    std::cout << "Enter recipient's IP address: ";
+    std::getline(std::cin, recipientIp);
+
+    std::cout << "Enter message: ";
+    std::getline(std::cin, message);
+
+    sendMessage(recipientIp.c_str(), message.c_str());
+}
+
+void receiveMenu() {
+    receiveMessage();
+}
+
+//ʕ´• ᴥ•̥`ʔ UTF8
+void wprint(std::wstring message)
+{
+#ifdef _WIN32
+    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD n_written;
+    WriteConsoleW(handle, message.c_str(), (DWORD)message.size(), &n_written, NULL);
+#else
+    std::wcout << message;
+#endif
+}
+
+int main() {
+    int choice;
+
+    do {
+        std::cout << "============================================================================================\n";
+        std::cout << "                                      S U N B E A R\n";
+        std::cout << "                                    -------------------";
+        std::cout << " \n";
+        wprint(L"                                         \u0295\u00b4\u2022\u0020\u1d25\u2022\u0325\u0060\u0294\n");
+        std::cout << " \n";
+        std::cout << "============================================================================================\n";
+        std::cout << "   \n";
+        std::cout << " [1] SEND MESSAGE\n";
+        std::cout << " [2] RECEIVE MESSAGE\n";
+        std::cout << " \n";
+        std::cout << " [3] EXIT\n";
+        std::cout << " \n";
+        std::cout << "   \n";
+        std::cout << "============================================================================================\n";
+        std::cout << "                        Enter your choice and press enter: \n";
+        std::cout << "                 USE A TOOL LIKE BROWNBEAR TO ENCRYPT YOUR MESSAGES\n";
+        std::cout << "============================================================================================\n";
+        std::cout << "   \n";
+        std::cin >> choice;
+        std::cin.ignore(); // Clear the input buffer
+
+        switch (choice) {
+        case 1:
+            sendMenu();
+            break;
+        case 2:
+            receiveMenu();
+            break;
+        case 3:
+            std::cout << "Exiting application...\n";
+            break;
+        default:
+            std::cout << "Invalid choice. Please enter a valid option.\n";
+            break;
+        }
+    } while (choice != 3);
+
+    return 0;
+}

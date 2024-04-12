@@ -1,0 +1,4 @@
+﻿  Ursus Maritimus.cpp
+D:\Visual Studio\Ursus maritimus\Ursus Maritimus.cpp(37,33): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+D:\Visual Studio\Ursus maritimus\Ursus Maritimus.cpp(108,34): warning C4244: 'argument': conversion from 'std::streamsize' to 'int', possible loss of data
+  Ursus maritimus.vcxproj -> D:\Visual Studio\Ursus maritimus\x64\Debug\Ursus maritimus.exe
