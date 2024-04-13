@@ -2,11 +2,58 @@
 #include <fstream>
 #include <string>
 #include <WS2tcpip.h>
+#include <openssl/aes.h>
+#include <openssl/evp.h>
 
 #pragma comment(lib, "ws2_32.lib")
+#pragma comment(lib, "libcrypto.lib") // Link against OpenSSL library
 
 #define PORT 12345
 #define BUFFER_SIZE 1024
+
+// Global variables to store AES key and IV
+unsigned char aes_key[AES_BLOCK_SIZE]; // 256-bit key
+unsigned char aes_iv[AES_BLOCK_SIZE];  // 128-bit IV
+
+void setAesKeyAndIV() {
+    std::cout << "Enter 256-bit AES key (32 characters): ";
+    std::cin >> std::hex;
+    for (int i = 0; i < AES_BLOCK_SIZE; ++i) {
+        std::cin >> aes_key[i];
+    }
+
+    std::cout << "Enter 128-bit AES IV (16 characters): ";
+    std::cin >> std::hex;
+    for (int i = 0; i < AES_BLOCK_SIZE; ++i) {
+        std::cin >> aes_iv[i];
+    }
+}
+
+// Function to encrypt data using AES-256
+void aesEncrypt(const unsigned char* plaintext, int plaintextLength, unsigned char* ciphertext, const unsigned char* key, const unsigned char* iv) {
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    EVP_EncryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+    int len;
+    int ciphertextLength;
+    EVP_EncryptUpdate(ctx, ciphertext, &len, plaintext, plaintextLength);
+    ciphertextLength = len;
+    EVP_EncryptFinal_ex(ctx, ciphertext + len, &len);
+    ciphertextLength += len;
+    EVP_CIPHER_CTX_free(ctx);
+}
+
+// Function to decrypt data using AES-256
+void aesDecrypt(const unsigned char* ciphertext, int ciphertextLength, unsigned char* plaintext, const unsigned char* key, const unsigned char* iv) {
+    EVP_CIPHER_CTX* ctx = EVP_CIPHER_CTX_new();
+    EVP_DecryptInit_ex(ctx, EVP_aes_256_cbc(), NULL, key, iv);
+    int len;
+    int plaintextLength;
+    EVP_DecryptUpdate(ctx, plaintext, &len, ciphertext, ciphertextLength);
+    plaintextLength = len;
+    EVP_DecryptFinal_ex(ctx, plaintext + len, &len);
+    plaintextLength += len;
+    EVP_CIPHER_CTX_free(ctx);
+}
 
 void sendMessage(const char* ip, const char* message) {
     WSADATA wsData;
@@ -296,8 +343,9 @@ int main() {
         std::cout << " [2] SEND FILE\n";
         std::cout << " [3] RECEIVE MESSAGE\n";
         std::cout << " [4] RECEIVE FILE\n";
+        std::cout << " [5] SET AES KEY AND IV\n"; 
         std::cout << " \n";
-        std::cout << " [5] EXIT\n";
+        std::cout << " [6] EXIT\n";
         std::cout << " \n";
         std::cout << "   \n";
         std::cout << "============================================================================================\n";
@@ -336,6 +384,9 @@ int main() {
             receiveFile();
             break;
         case 5:
+            setAesKeyAndIV(); // Call the new function to set AES key and IV
+            break;
+        case 6:
             std::cout << "Exiting application...\n";
             break;
         default:
